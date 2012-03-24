@@ -1,30 +1,25 @@
-﻿import socket
-import sys
+﻿#!/usr/bin/env python
+# UDP Client - udpclient.py
+import socket, sys
 
-# Create a TCP/IP socket
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+host = sys.argv[1]
+textport = sys.argv[2]
 
-# Connect the socket to the port where the server is listening
-server_address = ('localhost', 10000)
-print >>sys.stderr, 'connecting to %s port %s' % server_address
-sock.connect(server_address)
-
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # DGRAM - UDP
 try:
-    
-    # Send data
-    message = 'This is the message.  It will be repeated.'
-    print >>sys.stderr, 'sending "%s"' % message
-    sock.sendall(message)
+    port = int(textport)
+except ValueError:
+    port = socket.getservbyname(textport, 'udp')
 
-    # Look for the response
-    amount_received = 0
-    amount_expected = len(message)
-    
-    while amount_received < amount_expected:
-        data = sock.recv(16)
-        amount_received += len(data)
-        print >>sys.stderr, 'received "%s"' % data
-
-finally:
-    print >>sys.stderr, 'closing socket'
-    sock.close()
+s.connect((host, port))
+while 1:
+    print "Enter data to transmit:"
+    data = sys.stdin.readline().strip()
+    s.sendall(data)
+    print "Looking for replies; press Ctrl-C or Ctrl-Break to stop."
+    buf = s.recv(2048)
+    if not len(buf):
+        break
+    print "Server replies: ",
+    sys.stdout.write(buf)
+    print "\n"

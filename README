@@ -1,0 +1,3 @@
+Run:
+	python server.py
+	python client.py localhost 54321

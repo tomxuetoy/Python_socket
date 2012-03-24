@@ -1,39 +1,20 @@
-﻿import socket
-import sys
+﻿#!/usr/bin/env python
+# UDP Echo Server -  udpechoserver.py
+import socket, traceback
 
-# Create a TCP/IP socket
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+host = ''
+port = 54321
 
-# Bind the socket to the port
-server_address = ('localhost', 10000)
-print >>sys.stderr, 'starting up on %s port %s' % server_address
-sock.bind(server_address)
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # DGRAM - UDP
+s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+s.bind((host, port))
 
-# Listen for incoming connections
-sock.listen(1)
-
-while True:
-    # Wait for a connection
-    print >>sys.stderr, 'waiting for a connection'
-    print '    '
-	# Tom Xue: accept() returns an open connection between the server and client, 
-	# along with the address of the client
-    connection, client_address = sock.accept()
-    
+while 1:
     try:
-        print >>sys.stderr, 'connection from', client_address
-
-        # Receive the data in small chunks and retransmit it
-        while True:
-            data = connection.recv(16)
-            print >>sys.stderr, 'received "%s"' % data
-            if data:
-                print >>sys.stderr, 'sending data back to the client'
-                connection.sendall(data)
-            else:
-                print >>sys.stderr, 'no more data from', client_address
-                break
-            
-    finally:
-        # Clean up the connection
-        connection.close()
+        message, address = s.recvfrom(8192) # 8192: buffer size
+        print "Got data from", address
+        s.sendto(message, address)
+    except (KeyboardInterrupt, SystemExit):
+        raise # will show either KeyBoardInterrupt or SystemExit exception
+    except:
+        traceback.print_exc()
